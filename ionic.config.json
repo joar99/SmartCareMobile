@@ -1,0 +1,7 @@
+{
+  "name": "smartCareVue",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "vue-vite"
+}
