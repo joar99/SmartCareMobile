@@ -13,12 +13,14 @@
         <ion-item v-for="device in simplifiedDevices" :key="device.id" class="device-item">
           <ion-label>
             <div class="device-info">
-              <ion-text>Device: {{device.name}}</ion-text>
+              <ion-text>Device: {{ device.name }}</ion-text>
               <ion-text v-if="device.status">Status: Active</ion-text>
               <ion-text v-if="!device.status">Status: Inactive</ion-text>
-              <ion-text>Signal Strength: {{device.signalStrength}}</ion-text>
-              <ion-button v-if="device.status" color="danger" @click="haltDataCollection(device.id)">Halt Collection</ion-button>
-              <ion-button v-if="!device.status" color="primary" @click="startDataCollection(device.id)">Start Collection</ion-button>
+              <ion-text>Signal Strength: {{ device.signalStrength }}</ion-text>
+              <ion-button v-if="device.status" color="danger" @click="haltDataCollection(device.id)">Halt
+                Collection</ion-button>
+              <ion-button v-if="!device.status" color="primary" @click="startDataCollection(device.id)">Start
+                Collection</ion-button>
             </div>
           </ion-label>
         </ion-item>
@@ -29,9 +31,10 @@
 
 
 <script setup lang="ts">
-import {onMounted, ref} from 'vue';
-import {IonButton, IonContent, IonHeader, IonPage, IonTitle, IonToolbar} from '@ionic/vue';
-import {BleClient, ScanResult} from '@capacitor-community/bluetooth-le';
+import { onMounted, ref } from 'vue';
+import { IonButton, IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import { BleClient, ScanResult } from '@capacitor-community/bluetooth-le';
+import axiosInstance from '../axios';
 
 const simplifiedDevices = ref<SimplifiedDevice[]>([]);
 const discoveredDevices = ref<ScanResult[]>([]);
@@ -47,7 +50,7 @@ const characteristicUUIDs = {
   heartRateMeasurementCharacteristic: '00002a37-0000-1000-8000-00805f9b34fb', // For Heart Rate Service
 };
 
-onMounted( async () => {
+onMounted(async () => {
   try {
     await BleClient.initialize();
   } catch (error) {
@@ -133,31 +136,57 @@ const startPolarH10DataCollection = async (deviceId: string) => {
   try {
     await BleClient.connect(deviceId);
     await BleClient.startNotifications(
-        deviceId,
-        serviceUUIDs.heartRateService,
-        characteristicUUIDs.heartRateMeasurementCharacteristic,
-        (value) => {
-          const heartRate = parseHeartRate(value)
-          console.log("POLAR:" + heartRate)
-        }
+      deviceId,
+      serviceUUIDs.heartRateService,
+      characteristicUUIDs.heartRateMeasurementCharacteristic,
+      (value) => {
+        const heartRate = parseHeartRate(value)
+        console.log("POLAR:" + heartRate + " Device id:" + deviceId)
+
+        sendHeartRateData(heartRate);
+
+      }
     );
   } catch (error) {
     console.error("Error during Polar H10 data collection", error);
   }
 };
 
+function sendHeartRateData(heartrate: number): void {
+  const postData = JSON.stringify({
+    user_id: 1,
+    device_id: 1,
+    created_at: new Date().toISOString(),
+    heartrate: heartrate,
+  });
+
+  axiosInstance.post('heartrates/', postData, {
+    headers: {
+      "Content-Type": "application/json"
+    }
+  })
+    .then(response => {
+      // Handle successful response
+      console.log('Heart rate data submitted successfully:', response.data);
+    })
+    .catch(error => {
+      // Handle error
+      console.error('Error submitting heart rate data:', error);
+    });
+}
+
 const startNoninDataCollection = async (deviceId: string) => {
   try {
     await BleClient.connect(deviceId);
     await BleClient.startNotifications(
-        deviceId,
-        serviceUUIDs.pulseOximeterService,
-        characteristicUUIDs.oxygenCharacteristic,
-        (value) => {
-          const spo2 = parseSFLOAT(value, 1);
-          const pulseRate = parseSFLOAT(value, 3);
-          console.log(`NONIN: Parsed SpO2: ${spo2.toFixed(1)}%, Pulse Rate: ${pulseRate.toFixed(0)} BPM`);
-        }
+      deviceId,
+      serviceUUIDs.pulseOximeterService,
+      characteristicUUIDs.oxygenCharacteristic,
+      (value) => {
+        const spo2 = parseSFLOAT(value, 1);
+        const pulseRate = parseSFLOAT(value, 3);
+        console.log(`NONIN: Parsed SpO2: ${spo2.toFixed(1)}%, Pulse Rate: ${pulseRate.toFixed(0)} BPM`);
+      }
     );
   } catch (error) {
     console.error("Error during Nonin data collection", error);
@@ -212,7 +241,7 @@ const parseHeartRate = (data: DataView): number => {
 const markDeviceAsConnected = (deviceId: string) => {
   simplifiedDevices.value = simplifiedDevices.value.map(device => {
     if (device.id === deviceId) {
-      return { ...device, status: true};
+      return { ...device, status: true };
     }
     return device;
   });
@@ -221,7 +250,7 @@ const markDeviceAsConnected = (deviceId: string) => {
 const markDeviceAsDisconnected = (deviceId: string) => {
   simplifiedDevices.value = simplifiedDevices.value.map(device => {
     if (device.id === deviceId) {
-      return { ...device, status: false}
+      return { ...device, status: false }
     }
     return device;
   })
@@ -251,7 +280,8 @@ interface SimplifiedDevice {
 .device-info {
   display: flex;
   flex-direction: column;
-  gap: 8px; /* Adjust the gap size as needed */
+  gap: 8px;
+  /* Adjust the gap size as needed */
 }
 </style>
 
@@ -265,19 +295,18 @@ interface SimplifiedDevice {
 
 
 const onDisconnect = (deviceId: string) => {
-  console.log(`Device ${deviceId} disconnected`);
+console.log(`Device ${deviceId} disconnected`);
 };
 
 
 const startOAuth = () => {
-  window.location.href = 'https://localhost:8080/auth/polar';
+window.location.href = 'https://localhost:8080/auth/polar';
 }
 
 const startFitbitAuth = () => {
-  window.location.href = 'https://localhost:8080/auth/fitbit'
+window.location.href = 'https://localhost:8080/auth/fitbit'
 }
 
 const startWithingsAuth = () => {
-  window.location.href = 'https://localhost:8080/auth/withings'
+window.location.href = 'https://localhost:8080/auth/withings'
 }
-
