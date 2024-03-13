@@ -2,16 +2,24 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import HomePage from '../views/HomePage.vue'
 import OAuthCallback from "@/views/OAuthCallback.vue";
+import LoginQR from "@/views/LoginQR.vue";
+
+
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/home'
+    redirect: '/login'
   },
   {
     path: '/home',
     name: 'Home',
     component: HomePage
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: LoginQR
   },
   {
     path: '/oauth/callback',

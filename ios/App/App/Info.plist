@@ -22,6 +22,8 @@
     <string>$(CURRENT_PROJECT_VERSION)</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
+    <key>NSCameraUsageDescription</key>
+    <string>SmartCare requires camera access for QR code login</string>
     <key>NSBluetoothAlwaysUsageDescription</key>
     <string>Our application uses Bluetooth in the background to maintain connection to your heart rate monitors.</string>
     <key>NSBluetoothPeripheralUsageDescription</key>
