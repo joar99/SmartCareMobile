@@ -31,3 +31,4 @@ npm-debug.log*
 /plugins
 /www
 ios/App/
+ios/App/Podfile.lock

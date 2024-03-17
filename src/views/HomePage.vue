@@ -186,6 +186,9 @@ const startNoninDataCollection = async (deviceId: string) => {
         const spo2 = parseSFLOAT(value, 1);
         const pulseRate = parseSFLOAT(value, 3);
         console.log(`NONIN: Parsed SpO2: ${spo2.toFixed(1)}%, Pulse Rate: ${pulseRate.toFixed(0)} BPM`);
+
+        sendHeartRateData(pulseRate);
+        
       }
     );
   } catch (error) {
