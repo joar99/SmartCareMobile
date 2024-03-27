@@ -32,7 +32,7 @@
               Camera</ion-button
             >
             <ion-button @click="stopLoginFunc" v-show="scannerActive"
-              >Hide Scanner</ion-button
+              >Close Camera</ion-button
             >
           </ion-row>
           <ion-row style="justify-content: center">

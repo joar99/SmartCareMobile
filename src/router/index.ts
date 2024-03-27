@@ -7,7 +7,7 @@ import LoginQR from "@/views/LoginQR.vue";
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
-    redirect: "/home",
+    redirect: "/login",
   },
   {
     path: "/home",
