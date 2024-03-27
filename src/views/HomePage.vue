@@ -2,56 +2,149 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>SmartCare</ion-title>
+        <ion-title slot="start">SmartCare</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content :fullscreen="true">
-      <ion-button @click="startScan">Scan for Devices</ion-button>
+      <ion-card>
+        <ion-col>
+          <ion-row style="justify-content: center"
+            ><ion-text> <h3>Welcome user!</h3> </ion-text></ion-row
+          >
+          <ion-row style="justify-content: center">
+            <ion-text>
+              <p>Find devices by pressing the button below</p>
+            </ion-text></ion-row
+          >
+          <ion-row style="justify-content: center">
+            <ion-button class="scan-button" @click="startScan"
+              ><ion-icon :icon="bluetoothOutline"></ion-icon>Scan</ion-button
+            ></ion-row
+          >
+        </ion-col></ion-card
+      >
 
-      <ion-list>
-        <ion-item v-for="device in simplifiedDevices" :key="device.id" class="device-item">
-          <ion-label>
+      <ion-item
+        v-for="device in simplifiedDevices"
+        :key="device.id"
+        class="device-item"
+      >
+        <ion-label>
+          <ion-list :inset="true">
             <div class="device-info">
-              <ion-text>Device: {{device.name}}</ion-text>
-              <ion-text v-if="device.status">Status: Active</ion-text>
-              <ion-text v-if="!device.status">Status: Inactive</ion-text>
-              <ion-text>Signal Strength: {{device.signalStrength}}</ion-text>
-              <ion-button v-if="device.status" color="danger" @click="haltDataCollection(device.id)">Halt Collection</ion-button>
-              <ion-button v-if="!device.status" color="primary" @click="startDataCollection(device.id)">Start Collection</ion-button>
+              <ion-item>
+                <ion-label>Device: {{ device.name }}</ion-label>
+              </ion-item>
+              <ion-item>
+                <ion-label
+                  >Status:
+                  <ion-text v-if="device.status" color="success"
+                    >Active</ion-text
+                  >
+                  <ion-text v-if="!device.status" color="danger"
+                    >Inactive</ion-text
+                  ></ion-label
+                >
+              </ion-item>
+
+              <ion-item>
+                <ion-label
+                  >Signal Strength: {{ device.signalStrength }}</ion-label
+                >
+              </ion-item>
+              <ion-item>
+                <ion-label> Collection: </ion-label>
+                <ion-button
+                  v-if="device.status"
+                  color="danger"
+                  @click="haltDataCollection(device.id)"
+                  class="stop-collect-button"
+                  >Stop</ion-button
+                >
+                <ion-button
+                  v-if="!device.status"
+                  color="primary"
+                  @click="startDataCollection(device.id)"
+                  class="start-collect-button"
+                  >Start</ion-button
+                ></ion-item
+              >
+              <ion-item></ion-item>
             </div>
-          </ion-label>
-        </ion-item>
-      </ion-list>
+          </ion-list>
+        </ion-label>
+      </ion-item>
+      <!-- <ion-item
+        v-for="device in simplifiedDevices"
+        :key="device.id"
+        class="device-item"
+      >
+        <ion-label>
+          <div class="device-info">
+            <ion-text>Device: {{ device.name }}</ion-text>
+            <ion-text v-if="device.status">Status: Active</ion-text>
+            <ion-text v-if="!device.status">Status: Inactive</ion-text>
+            <ion-text>Signal Strength: {{ device.signalStrength }}</ion-text>
+            <ion-button
+              v-if="device.status"
+              color="danger"
+              @click="haltDataCollection(device.id)"
+              >Halt Collection</ion-button
+            >
+            <ion-button
+              v-if="!device.status"
+              color="primary"
+              @click="startDataCollection(device.id)"
+              >Start Collection</ion-button
+            >
+          </div>
+        </ion-label>
+      </ion-item> -->
     </ion-content>
   </ion-page>
 </template>
 
-
 <script setup lang="ts">
-import {onMounted, ref} from 'vue';
-import {IonButton, IonContent, IonHeader, IonPage, IonTitle, IonToolbar} from '@ionic/vue';
-import {BleClient, ScanResult} from '@capacitor-community/bluetooth-le';
+import { onMounted, ref } from "vue";
+import {
+  IonButton,
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+  IonIcon,
+  IonButtons,
+  IonList,
+  IonItem,
+  IonLabel,
+  IonText,
+  IonCard,
+  IonCol,
+  IonRow,
+} from "@ionic/vue";
+import { BleClient, ScanResult } from "@capacitor-community/bluetooth-le";
+import { bluetoothOutline } from "ionicons/icons";
 
 const simplifiedDevices = ref<SimplifiedDevice[]>([]);
 const discoveredDevices = ref<ScanResult[]>([]);
 
 const serviceUUIDs = {
-  pulseOximeterService: '00001822-0000-1000-8000-00805f9b34fb', //For pulse Oximeter advertising devices
-  heartRateService: '0000180d-0000-1000-8000-00805f9b34fb', //For heartrate advertising devices
+  pulseOximeterService: "00001822-0000-1000-8000-00805f9b34fb", //For pulse Oximeter advertising devices
+  heartRateService: "0000180d-0000-1000-8000-00805f9b34fb", //For heartrate advertising devices
 };
-
 
 const characteristicUUIDs = {
-  oxygenCharacteristic: '00002a5f-0000-1000-8000-00805f9b34fb', // For Pulse Oximeter Service
-  heartRateMeasurementCharacteristic: '00002a37-0000-1000-8000-00805f9b34fb', // For Heart Rate Service
+  oxygenCharacteristic: "00002a5f-0000-1000-8000-00805f9b34fb", // For Pulse Oximeter Service
+  heartRateMeasurementCharacteristic: "00002a37-0000-1000-8000-00805f9b34fb", // For Heart Rate Service
 };
 
-onMounted( async () => {
+onMounted(async () => {
   try {
     await BleClient.initialize();
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
 });
 
@@ -59,56 +152,74 @@ const startScan = async () => {
   try {
     const scanDuration = 10 * 1000;
 
-    const connectedDevices = simplifiedDevices.value.filter(device => device.status);
+    const connectedDevices = simplifiedDevices.value.filter(
+      (device) => device.status
+    );
 
-    await BleClient.requestLEScan({
-      services: [serviceUUIDs.pulseOximeterService, serviceUUIDs.heartRateService],
-    }, (result) => {
-      const deviceExistsInSimplified = simplifiedDevices.value.find(device => device.id === result.device.deviceId);
-      const deviceIsConnected = deviceExistsInSimplified && deviceExistsInSimplified.status;
+    await BleClient.requestLEScan(
+      {
+        services: [
+          serviceUUIDs.pulseOximeterService,
+          serviceUUIDs.heartRateService,
+        ],
+      },
+      (result) => {
+        const deviceExistsInSimplified = simplifiedDevices.value.find(
+          (device) => device.id === result.device.deviceId
+        );
+        const deviceIsConnected =
+          deviceExistsInSimplified && deviceExistsInSimplified.status;
 
-      if (deviceIsConnected) return;
+        if (deviceIsConnected) return;
 
-      const newSimplifiedDevice: SimplifiedDevice = {
-        id: result.device.deviceId,
-        name: result.localName || result.device.name || "Unknown BLE Device",
-        signalStrength: calculateSignalStrength(result.rssi ?? -100),
-        status: false
-      };
+        const newSimplifiedDevice: SimplifiedDevice = {
+          id: result.device.deviceId,
+          name: result.localName || result.device.name || "Unknown BLE Device",
+          signalStrength: calculateSignalStrength(result.rssi ?? -100),
+          status: false,
+        };
 
-      if (deviceExistsInSimplified) {
-        simplifiedDevices.value = simplifiedDevices.value.map(device => device.id === newSimplifiedDevice.id ? newSimplifiedDevice : device);
-      } else {
-        simplifiedDevices.value.push(newSimplifiedDevice);
+        if (deviceExistsInSimplified) {
+          simplifiedDevices.value = simplifiedDevices.value.map((device) =>
+            device.id === newSimplifiedDevice.id ? newSimplifiedDevice : device
+          );
+        } else {
+          simplifiedDevices.value.push(newSimplifiedDevice);
+        }
+
+        const indexInDiscovered = discoveredDevices.value.findIndex(
+          (device) => device.device.deviceId === result.device.deviceId
+        );
+        if (indexInDiscovered !== -1) {
+          discoveredDevices.value[indexInDiscovered] = result;
+        } else {
+          discoveredDevices.value.push(result);
+        }
       }
-
-      const indexInDiscovered = discoveredDevices.value.findIndex(device => device.device.deviceId === result.device.deviceId);
-      if (indexInDiscovered !== -1) {
-        discoveredDevices.value[indexInDiscovered] = result;
-      } else {
-        discoveredDevices.value.push(result);
-      }
-    });
+    );
 
     setTimeout(async () => {
       await BleClient.stopLEScan();
-      connectedDevices.forEach(connectedDevice => {
-        if (!simplifiedDevices.value.some(device => device.id === connectedDevice.id)) {
+      connectedDevices.forEach((connectedDevice) => {
+        if (
+          !simplifiedDevices.value.some(
+            (device) => device.id === connectedDevice.id
+          )
+        ) {
           simplifiedDevices.value.push(connectedDevice);
         }
       });
     }, scanDuration);
-
   } catch (error) {
     console.error("Error starting BLE scan", error);
   }
 };
 
-
-
 const startDataCollection = async (deviceId: string) => {
-  const device = discoveredDevices.value.find(d => d.device.deviceId === deviceId);
-  const simpleDevice = simplifiedDevices.value.find(d => d.id === deviceId);
+  const device = discoveredDevices.value.find(
+    (d) => d.device.deviceId === deviceId
+  );
+  const simpleDevice = simplifiedDevices.value.find((d) => d.id === deviceId);
   if (!device) {
     console.error("Device not found");
     return;
@@ -118,10 +229,10 @@ const startDataCollection = async (deviceId: string) => {
     if (!simpleDevice?.status) {
       if (device.device.name.startsWith("Polar H10")) {
         await startPolarH10DataCollection(deviceId);
-        markDeviceAsConnected(deviceId)
+        markDeviceAsConnected(deviceId);
       } else if (device.device.name.startsWith("Nonin")) {
         await startNoninDataCollection(deviceId);
-        markDeviceAsConnected(deviceId)
+        markDeviceAsConnected(deviceId);
       } else {
         console.error("Unsupported device type");
       }
@@ -133,13 +244,13 @@ const startPolarH10DataCollection = async (deviceId: string) => {
   try {
     await BleClient.connect(deviceId);
     await BleClient.startNotifications(
-        deviceId,
-        serviceUUIDs.heartRateService,
-        characteristicUUIDs.heartRateMeasurementCharacteristic,
-        (value) => {
-          const heartRate = parseHeartRate(value)
-          console.log("POLAR:" + heartRate)
-        }
+      deviceId,
+      serviceUUIDs.heartRateService,
+      characteristicUUIDs.heartRateMeasurementCharacteristic,
+      (value) => {
+        const heartRate = parseHeartRate(value);
+        console.log("POLAR:" + heartRate);
+      }
     );
   } catch (error) {
     console.error("Error during Polar H10 data collection", error);
@@ -150,14 +261,18 @@ const startNoninDataCollection = async (deviceId: string) => {
   try {
     await BleClient.connect(deviceId);
     await BleClient.startNotifications(
-        deviceId,
-        serviceUUIDs.pulseOximeterService,
-        characteristicUUIDs.oxygenCharacteristic,
-        (value) => {
-          const spo2 = parseSFLOAT(value, 1);
-          const pulseRate = parseSFLOAT(value, 3);
-          console.log(`NONIN: Parsed SpO2: ${spo2.toFixed(1)}%, Pulse Rate: ${pulseRate.toFixed(0)} BPM`);
-        }
+      deviceId,
+      serviceUUIDs.pulseOximeterService,
+      characteristicUUIDs.oxygenCharacteristic,
+      (value) => {
+        const spo2 = parseSFLOAT(value, 1);
+        const pulseRate = parseSFLOAT(value, 3);
+        console.log(
+          `NONIN: Parsed SpO2: ${spo2.toFixed(
+            1
+          )}%, Pulse Rate: ${pulseRate.toFixed(0)} BPM`
+        );
+      }
     );
   } catch (error) {
     console.error("Error during Nonin data collection", error);
@@ -165,28 +280,51 @@ const startNoninDataCollection = async (deviceId: string) => {
 };
 
 const haltDataCollection = async (deviceId: string) => {
-  const servicesToCancel = [serviceUUIDs.pulseOximeterService, serviceUUIDs.heartRateService];
+  const servicesToCancel = [
+    serviceUUIDs.pulseOximeterService,
+    serviceUUIDs.heartRateService,
+  ];
   try {
     for (const serviceUUID of servicesToCancel) {
-      await BleClient.stopNotifications(deviceId, serviceUUID, characteristicUUIDs.oxygenCharacteristic).catch((e) => console.log(`Service ${serviceUUID} not supported or no subscription found:`, e));
-      await BleClient.stopNotifications(deviceId, serviceUUID, characteristicUUIDs.heartRateMeasurementCharacteristic).catch((e) => console.log(`Service ${serviceUUID} not supported or no subscription found:`, e));
+      await BleClient.stopNotifications(
+        deviceId,
+        serviceUUID,
+        characteristicUUIDs.oxygenCharacteristic
+      ).catch((e) =>
+        console.log(
+          `Service ${serviceUUID} not supported or no subscription found:`,
+          e
+        )
+      );
+      await BleClient.stopNotifications(
+        deviceId,
+        serviceUUID,
+        characteristicUUIDs.heartRateMeasurementCharacteristic
+      ).catch((e) =>
+        console.log(
+          `Service ${serviceUUID} not supported or no subscription found:`,
+          e
+        )
+      );
     }
-    markDeviceAsDisconnected(deviceId)
+    markDeviceAsDisconnected(deviceId);
     console.log(`Data collection halted for device ${deviceId}`);
   } catch (error) {
-    console.error(`Error halting data collection for device ${deviceId}:`, error);
+    console.error(
+      `Error halting data collection for device ${deviceId}:`,
+      error
+    );
   }
 };
-
 
 const parseSFLOAT = (dataView: any, index: number) => {
   const buffer = new Uint8Array(dataView.buffer);
   const exp = buffer[index + 1] >> 4;
   const exponent = exp > 7 ? exp - 16 : exp;
 
-  let mantissa = ((buffer[index + 1] & 0x0F) << 8) | buffer[index];
+  let mantissa = ((buffer[index + 1] & 0x0f) << 8) | buffer[index];
   if (mantissa >= 0x0800) {
-    mantissa = -((0x0FFF + 1) - mantissa);
+    mantissa = -(0x0fff + 1 - mantissa);
   }
 
   return mantissa * Math.pow(10, exponent);
@@ -210,23 +348,22 @@ const parseHeartRate = (data: DataView): number => {
 };
 
 const markDeviceAsConnected = (deviceId: string) => {
-  simplifiedDevices.value = simplifiedDevices.value.map(device => {
+  simplifiedDevices.value = simplifiedDevices.value.map((device) => {
     if (device.id === deviceId) {
-      return { ...device, status: true};
+      return { ...device, status: true };
     }
     return device;
   });
-}
+};
 
 const markDeviceAsDisconnected = (deviceId: string) => {
-  simplifiedDevices.value = simplifiedDevices.value.map(device => {
+  simplifiedDevices.value = simplifiedDevices.value.map((device) => {
     if (device.id === deviceId) {
-      return { ...device, status: false}
+      return { ...device, status: false };
     }
     return device;
-  })
-}
-
+  });
+};
 
 const calculateSignalStrength = (rssi: number): string => {
   if (rssi > -50) {
@@ -236,7 +373,7 @@ const calculateSignalStrength = (rssi: number): string => {
   } else {
     return "Weak";
   }
-}
+};
 
 interface SimplifiedDevice {
   id: string;
@@ -244,7 +381,6 @@ interface SimplifiedDevice {
   signalStrength: string;
   status: boolean;
 }
-
 </script>
 
 <style>
@@ -253,31 +389,30 @@ interface SimplifiedDevice {
   flex-direction: column;
   gap: 8px; /* Adjust the gap size as needed */
 }
+
+.scan-button {
+  --background: #3880ff;
+}
+
+.stop-collect-button {
+  --background: #f04141;
+  height: 40px;
+  margin-bottom: 2%;
+}
+
+.start-collect-button {
+  --background: #24a148;
+  height: 40px;
+  margin-bottom: 2%;
+}
 </style>
 
-
-
-
-
-//const HEART_RATE_SERVICE = '0000180d-0000-1000-8000-00805f9b34fb';
-//const BATTERY_SERVICE = '0000180f-0000-1000-8000-00805f9b34fb';
-//const HEART_RATE_MEASUREMENT_CHARACTERISTIC = '00002a37-0000-1000-8000-00805f9b34fb';
-
-
-const onDisconnect = (deviceId: string) => {
-  console.log(`Device ${deviceId} disconnected`);
-};
-
-
-const startOAuth = () => {
-  window.location.href = 'https://localhost:8080/auth/polar';
-}
-
-const startFitbitAuth = () => {
-  window.location.href = 'https://localhost:8080/auth/fitbit'
-}
-
-const startWithingsAuth = () => {
-  window.location.href = 'https://localhost:8080/auth/withings'
-}
-
+//const HEART_RATE_SERVICE = '0000180d-0000-1000-8000-00805f9b34fb'; //const
+BATTERY_SERVICE = '0000180f-0000-1000-8000-00805f9b34fb'; //const
+HEART_RATE_MEASUREMENT_CHARACTERISTIC = '00002a37-0000-1000-8000-00805f9b34fb';
+const onDisconnect = (deviceId: string) => { console.log(`Device ${deviceId}
+disconnected`); }; const startOAuth = () => { window.location.href =
+'https://localhost:8080/auth/polar'; } const startFitbitAuth = () => {
+window.location.href = 'https://localhost:8080/auth/fitbit' } const
+startWithingsAuth = () => { window.location.href =
+'https://localhost:8080/auth/withings' }
