@@ -155,9 +155,11 @@ const startPolarH10DataCollection = async (deviceId: string) => {
 function sendHeartRateData(heartrate: number): void {
   const postData = JSON.stringify({
     user_id: 1, // TODO: Replace with actual user ID
-    device_id: 1, // TODO: Replace with actual device ID
     created_at: new Date().toISOString(), // Current date and time in ISO format (e.g. 2021-08-25T12:34:56.789Z)
     heartrate: heartrate, // The heart rate value
+    data_quality: "N/A", // Data quality (e.g. "Good", "Poor", "N/A")
+    annotations: {}, // Additional annotations (e.g. { "note": "This is a test" })
+    device_id: 1, // TODO: Replace with actual device ID
   });
 
   axiosInstance.post('heartrates/', postData, {
