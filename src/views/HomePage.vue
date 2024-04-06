@@ -154,10 +154,10 @@ const startPolarH10DataCollection = async (deviceId: string) => {
 
 function sendHeartRateData(heartrate: number): void {
   const postData = JSON.stringify({
-    user_id: 1,
-    device_id: 1,
-    created_at: new Date().toISOString(),
-    heartrate: heartrate,
+    user_id: 1, // TODO: Replace with actual user ID
+    device_id: 1, // TODO: Replace with actual device ID
+    created_at: new Date().toISOString(), // Current date and time in ISO format (e.g. 2021-08-25T12:34:56.789Z)
+    heartrate: heartrate, // The heart rate value
   });
 
   axiosInstance.post('heartrates/', postData, {
@@ -187,7 +187,7 @@ const startNoninDataCollection = async (deviceId: string) => {
         const pulseRate = parseSFLOAT(value, 3);
         console.log(`NONIN: Parsed SpO2: ${spo2.toFixed(1)}%, Pulse Rate: ${pulseRate.toFixed(0)} BPM`);
 
-        sendHeartRateData(pulseRate);
+        sendHeartRateData(pulseRate); //! Does not work for some reason
         
       }
     );
